@@ -1,0 +1,185 @@
+---
+title: "Effect size trends over time in autism research"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load libraries and data
+
+```{r, warning=FALSE, message=FALSE}
+# load libraries we'll use
+library(easypackages)
+libraries("ggplot2","readxl","here","MASS","patchwork")
+
+# paths
+code_path = here("code")
+data_path = here("data")
+plot_path = here("plots")
+
+# read in the data
+data_file = file.path(data_path,"rodgaard_dataset.xlsx")
+data = read_excel(data_file, sheet="All")
+data$Title = factor(data$Title)
+data$Type = factor(data$Type)
+data$Domain = factor(data$Domain)
+data$Level = factor(data$Level)
+data$Social = factor(data$Social)
+```
+
+## Social cognition
+
+```{r, warning=FALSE, message=FALSE}
+social_data = subset(data, data$Social=="Social")
+
+# test for correlation between sample size and effect size in social domain
+res = cor.test(log10(social_data$Participants), social_data$Effect, method = "spearman")
+res
+
+# test for correlation between year and effect size in social domain
+res = cor.test(social_data$Year, social_data$Effect, method = "spearman")
+res
+
+# test for correlation between year and sample size in social domain
+res = cor.test(social_data$Year, log10(social_data$Participants), method = "spearman")
+res
+
+# plot sample size against effect size for social studies
+mid = mean(log10(social_data$Participants))
+
+p1a = ggplot(data = social_data, aes(x = log10(Participants), y = Effect))
+p1a = p1a + geom_point(data = social_data, aes(size=Participants, fill = log10(Participants)), colour="black",pch=21)
+p1a = p1a + geom_smooth(data = social_data, method = rlm, aes(group=1), colour="black") + xlab("log10(Sample Size") + ylab("Effect Size")
+p1a = p1a + scale_fill_gradient2(midpoint=mid, low="blue", mid="white", high="red", name ="log10(Sample Size)" ) + guides(size=FALSE) 
+p1a = p1a + ggtitle("Social: n by Effect Size") + theme(plot.title = element_text(hjust = 0.5))
+p1a
+
+p1b = ggplot(data = social_data, aes(x = Year, y = Effect))
+p1b = p1b + geom_point(data = social_data, aes(size=Participants, fill = log10(Participants)), colour="black",pch=21)
+p1b = p1b + geom_smooth(data = social_data, method = rlm, aes(group=1), colour="black") + ylab("Effect Size")
+p1b = p1b + scale_fill_gradient2(midpoint=mid, low="blue", mid="white", high="red", name ="log10(Sample Size)" ) + guides(size=FALSE) 
+p1b = p1b + ggtitle("Social: Year by Effect Size") + theme(plot.title = element_text(hjust = 0.5)) + guides(fill = FALSE)
+p1b
+
+p1 = p1b + p1a
+ggsave(filename = file.path(plot_path,"social.pdf"), width = 10, height = 5)
+p1
+```
+
+## Non-social cognition
+
+```{r, warning=FALSE, message=FALSE}
+nonsocial_data = subset(data, data$Social=="Non-Social")
+
+# test for correlation between sample size and effect size in non-social domain
+res = cor.test(log10(nonsocial_data$Participants), nonsocial_data$Effect, method = "spearman")
+res
+
+# test for correlation between year and effect size in non-social domain
+res = cor.test(nonsocial_data$Year, nonsocial_data$Effect, method = "spearman")
+res
+
+# test for correlation between year and sample size in non-social domain
+res = cor.test(nonsocial_data$Year, log10(nonsocial_data$Participants), method = "spearman")
+res
+
+# plot sample size against effect size for non-social studies
+mid = mean(log10(nonsocial_data$Participants))
+
+p2a = ggplot(data = nonsocial_data, aes(x = log10(Participants), y = Effect))
+p2a = p2a + geom_point(data = nonsocial_data, aes(size=Participants, fill = log10(Participants)), colour="black",pch=21)
+p2a = p2a + geom_smooth(data = nonsocial_data, method = rlm, aes(group=1), colour="black") + xlab("log10(Sample Size") + ylab("Effect Size")
+p2a = p2a + scale_fill_gradient2(midpoint=mid, low="blue", mid="white", high="red", name ="log10(Sample Size)" ) + guides(size=FALSE) 
+p2a = p2a + ggtitle("Non-social: n by Effect Size") + theme(plot.title = element_text(hjust = 0.5))
+p2a
+
+p2b = ggplot(data = nonsocial_data, aes(x = Year, y = Effect))
+p2b = p2b + geom_point(data = nonsocial_data, aes(size=Participants, fill = log10(Participants)), colour="black",pch=21)
+p2b = p2b + geom_smooth(data = nonsocial_data, method = rlm, aes(group=1), colour="black") + ylab("Effect Size")
+p2b = p2b + scale_fill_gradient2(midpoint=mid, low="blue", mid="white", high="red", name ="log10(Sample Size)" ) + guides(size=FALSE) 
+p2b = p2b + ggtitle("Non-social: Year by Effect Size") + theme(plot.title = element_text(hjust = 0.5)) + guides(fill = FALSE)
+p2b
+
+p2 = p2b + p2a
+ggsave(filename = file.path(plot_path,"nonsocial.pdf"), width = 10, height = 5)
+p2
+```
+
+## P3 amplitude and brain size
+
+```{r, warning=FALSE, message=FALSE}
+biology_data = subset(data, data$Level=="Biology")
+p3_data = subset(biology_data, biology_data$Domain=="P3 Amplitude")
+brainsize_data = subset(biology_data, biology_data$Domain=="Brain Size")
+
+# test for correlation between sample size and effect size for P3 Amplitude
+res = cor.test(log10(p3_data$Participants), p3_data$Effect, method = "spearman")
+res
+
+# test for correlation between year and effect size for P3 Amplitude
+res = cor.test(p3_data$Year, p3_data$Effect, method = "spearman")
+res
+
+# test for correlation between year and sample size for P3 Amplitude
+res = cor.test(p3_data$Year, log10(p3_data$Participants), method = "spearman")
+res
+
+# plot sample size against effect size for P3 Amplitude
+mid = mean(log10(p3_data$Participants))
+
+p3a = ggplot(data = p3_data, aes(x = log10(Participants), y = Effect))
+p3a = p3a + geom_point(data = p3_data, aes(size=Participants, fill = log10(Participants)), colour="black",pch=21)
+p3a = p3a + geom_smooth(data = p3_data, method = rlm, aes(group=1), colour="black") + xlab("log10(Sample Size") + ylab("Effect Size")
+p3a = p3a + scale_fill_gradient2(midpoint=mid, low="blue", mid="white", high="red", name ="log10(Sample Size)" ) + guides(size=FALSE) 
+p3a = p3a + ggtitle("P3: n by Effect Size") + theme(plot.title = element_text(hjust = 0.5))
+p3a
+
+p3b = ggplot(data = p3_data, aes(x = Year, y = Effect))
+p3b = p3b + geom_point(data = p3_data, aes(size=Participants, fill = log10(Participants)), colour="black",pch=21)
+p3b = p3b + geom_smooth(data = p3_data, method = rlm, aes(group=1), colour="black") + ylab("Effect Size")
+p3b = p3b + scale_fill_gradient2(midpoint=mid, low="blue", mid="white", high="red", name ="log10(Sample Size)" ) + guides(size=FALSE) 
+p3b = p3b + ggtitle("P3: Year by Effect Size") + theme(plot.title = element_text(hjust = 0.5)) + guides(fill = FALSE)
+p3b
+
+p3 = p3b + p3a
+ggsave(filename = file.path(plot_path,"p3.pdf"), width = 10, height = 5)
+p3
+
+# test for correlation between sample size and effect size for Brain Size
+res = cor.test(log10(brainsize_data$Participants), brainsize_data$Effect, method = "spearman")
+res
+
+# test for correlation between year and effect size for Brain Size
+res = cor.test(brainsize_data$Year, brainsize_data$Effect, method = "spearman")
+res
+
+# test for correlation between year and sample size for Brain Size
+res = cor.test(brainsize_data$Year, log10(brainsize_data$Participants), method = "spearman")
+res
+
+# plot sample size against effect size for Brain Size
+mid = mean(log10(brainsize_data$Participants))
+
+p4a = ggplot(data = brainsize_data, aes(x = log10(Participants), y = Effect))
+p4a = p4a + geom_point(data = brainsize_data, aes(size=Participants, fill = log10(Participants)), colour="black",pch=21)
+p4a = p4a + geom_smooth(data = brainsize_data, method = rlm, aes(group=1), colour="black") + xlab("log10(Sample Size") + ylab("Effect Size")
+p4a = p4a + scale_fill_gradient2(midpoint=mid, low="blue", mid="white", high="red", name ="log10(Sample Size)" ) + guides(size=FALSE) 
+p4a = p4a + ggtitle("Brain Size: n by Effect Size") + theme(plot.title = element_text(hjust = 0.5))
+p4a
+
+p4b = ggplot(data = brainsize_data, aes(x = Year, y = Effect))
+p4b = p4b + geom_point(data = brainsize_data, aes(size=Participants, fill = log10(Participants)), colour="black",pch=21)
+p4b = p4b + geom_smooth(data = brainsize_data, method = rlm, aes(group=1), colour="black") + ylab("Effect Size")
+p4b = p4b + scale_fill_gradient2(midpoint=mid, low="blue", mid="white", high="red", name ="log10(Sample Size)" ) + guides(size=FALSE) 
+p4b = p4b + ggtitle("Brain Size: Year by Effect Size") + theme(plot.title = element_text(hjust = 0.5)) + guides(fill = FALSE)
+p4b
+
+p4 = p4b + p4a
+ggsave(filename = file.path(plot_path,"brainsize.pdf"), width = 10, height = 5)
+p4
+```
+
+
+
